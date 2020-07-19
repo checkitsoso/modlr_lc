@@ -1,0 +1,91 @@
+---
+title: "Examples"
+author: "Sunyul Kim"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+#### R Markdown
+require(knitr)
+
+#### Constrained Newton Method
+require(lsei)
+
+#### Linear Programming
+require(Rglpk)
+require(Matrix)
+
+#### Differential Evolution
+require(DEoptim)
+
+Rscripts = list.files("./codes/")
+for (Rscript in Rscripts) {
+  source(paste("./codes/", Rscript, sep=""))
+}
+```
+
+## Example 1
+
+```{r, include=FALSE}
+set.seed(32401)
+
+beta = c(2, 1, 1)
+
+n = 250
+
+z = cbind(1, rbinom(n, 1, 0.5), runif(n, -1, 1))
+e = rnorm(n, 0, 1)
+y = z%*%beta + e
+
+fit_ols = lm(y ~ 0+z)
+fit_ols$coefficients
+
+L = c(1.5, 0.5, 0.5)
+U = c(2.5, 1.5, 1.5)
+
+res = lcmlr_de(y, z, L, U, kmax=200)
+res = lcmlr_aa(y, z, beta=res$beta)
+```
+
+```{r, echo=FALSE}
+res$beta
+```
+
+```{r, echo=FALSE}
+hist(e, freq=FALSE, nclass=15)
+curve(dlcd(x, res$lcd), col="red", add=TRUE)
+```
+
+## Example 2
+
+```{r, include=FALSE}
+set.seed(32401)
+
+beta = c(2, 1, 1)
+
+n = 250
+
+z = cbind(1, rbinom(n, 1, 0.5), runif(n, -1, 1))
+e = rchisq(n, 5) - 3
+y = z%*%beta + e
+
+fit_ols = lm(y ~ 0+z)
+fit_ols$coefficients
+
+L = c(1.5, 0.5, 0.5)
+U = c(2.5, 1.5, 1.5)
+
+res = lcmlr_de(y, z, L, U, kmax=200)
+res = lcmlr_aa(y, z, beta=res$beta)
+```
+
+```{r, echo=FALSE}
+res$beta
+```
+
+```{r, echo=FALSE}
+hist(e, freq=FALSE, nclass=15)
+curve(dlcd(x, res$lcd), col="red", add=TRUE)
+```
